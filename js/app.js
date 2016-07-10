@@ -1,5 +1,5 @@
 ;var Application = 
-(function(){
+(function(PrefixTree, parsers, $){
 	var _currentBookParagraphs = [];
 	var _currentBookTree = new PrefixTree();
 	var _currentBookWordList = [];
@@ -55,7 +55,6 @@
 					  text += '\n' + st[j];
 				}
 
-				//define variable type as Object
 				subtitles[index] = {};
 				subtitles[index].number = number;
 				subtitles[index].start = start;
@@ -74,35 +73,19 @@
 	}
 
 	return {
-		parseFile: function(fileContent){
-			console.log('parseFile started');
-			var parsedArr = _parseSrt(fileContent);
-			//console.log(parsedArr);
+		fileSupported: function(){
+			return parsers.parserExists(fileExtension);
+		},
+		parseFile: function(fileContent, fileExtension){
+			// console.log('parseFile ' + fileExtension + ' started');
 			
-			var strParagraphs = [];
-			for (var i = 0; i < parsedArr.length; ++i)
-			{
-				strParagraphs.push(parsedArr[i].start + ' -> ' + parsedArr[i].end + ': ' + parsedArr[i].text);
-			}
+			var parser = parsers.getParser(fileExtension);
+			parser.parse(fileContent);
+			var strParagraphs = parser.getParagraphs();
 
-			console.log(strParagraphs);
+			// console.log(strParagraphs);
 			_currentBookParagraphs = strParagraphs;
 			_buildTreeForBook();
-			
-			// var xmlParser = new DOMParser();
-			// xmlDoc = xmlParser.parseFromString(fileContent, "text/xml");
-			
-			// var paragraphNodes = xmlDoc.getElementsByTagName("p");
-			// var strParagraphs = [];
-			
-			// var i = 0, node;
-			// while (node = paragraphNodes[i++]) {
-				// strParagraphs.push(node.childNodes[0].nodeValue);
-			// }
-			
-			// //console.log(strParagraphs);
-			// _currentBookParagraphs = strParagraphs;
-			// _buildTreeForBook();
 		},
 		showWordList: function(){
 			var wordListBody = $('#wordList');
@@ -149,4 +132,4 @@
 			nextNode.slideToggle();
 		}
 	};
-})();
+})(PrefixTree, Parsers, jQuery);

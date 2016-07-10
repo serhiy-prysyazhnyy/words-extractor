@@ -4,35 +4,16 @@
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
 		<link rel="stylesheet" type="text/css" href="css/main.css" />
-		<script src="lib/jquery-1.10.2.min.js"></script>
+		<script src="lib/jquery-2.2.4.min.js"></script>
 		<script src="lib/bootstrap.min.js"></script>
 		<script src="js/prefix-tree.js"></script>
+		<script src="js/parsers.js"></script>
 		<script src="js/app.js"></script>
 	</head>
 	<body>
-		<style type="text/css">
-		.btn-file {
-			position: relative;
-			overflow: hidden;
-		}
-		.btn-file input[type=file] {
-			position: absolute;
-			top: 0;
-			right: 0;
-			min-width: 100%;
-			min-height: 100%;
-			font-size: 100px;
-			text-align: right;
-			filter: alpha(opacity=0);
-			opacity: 0;
-			outline: none;
-			background: white;
-			cursor: inherit;
-			display: block;
-		}
-		</style>
 		<header class="navbar navbar-default navbar-fixed-top">
 		  <div class="container">
 			<div class="navbar-header">
@@ -147,8 +128,12 @@
 					
 					reader.onloadend = function(evt) {
 						//console.log(evt.target);
+						var nameParts = file.name.split('.');
+						var extension = nameParts[nameParts.length -1];
+						//console.log(extension);
+						
 						if (evt.target.readyState == FileReader.DONE) { // DONE == 2
-							Application.parseFile(evt.target.result);
+							Application.parseFile(evt.target.result, extension);
 							Application.showWordList();
 						}
 					};
