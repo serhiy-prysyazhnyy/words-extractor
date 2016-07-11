@@ -168,8 +168,7 @@ var PrefixTree = function(){
 				'paragraphOffset': loc.paragraphOffset
 			});
 		}
-		
-		
+				
 		return copy;
 	};
 };
