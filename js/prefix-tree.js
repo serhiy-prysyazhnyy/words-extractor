@@ -33,6 +33,18 @@ var PrefixTree = function(){
 		return curr;
 	}
 	
+	var _getWordForNode = function(node)
+	{
+		var word = '';
+		while (node.Parent)
+		{
+			word = node.Key + word;
+			node = node.Parent;
+		}
+		return word;
+	}
+
+	
 	this.clear = function(){
 		_root = new Node();
 	};
@@ -55,18 +67,14 @@ var PrefixTree = function(){
 		
 		wordNode.TerminalLocations.push(terminalLocation);
 		
-		if (word != lemma)
-		{
+		//if (word != lemma)
+		//{
 			var lemmaNode = _getNodeForWord(lemma);
 			if (!lemmaNode.LematizedNodes.includes(wordNode))
 			{
 				lemmaNode.LematizedNodes.push(wordNode);
 			}
-			else
-			{
-				console.log('found');
-			}
-		}
+		//}
 		//console.log(_root);
 	};
 	
@@ -91,7 +99,46 @@ var PrefixTree = function(){
 		var words = [];
 		_appendWordRec('', _root, words);
 		return words;
-	},
+	};
+
+	var _appendLemmaRec = function(node, lemmaGroups)
+	{
+		if (node.LematizedNodes.length > 0)
+		{
+			var lemma = _getWordForNode(node);
+			var lemmaGroup = {
+				'value': lemma,
+				'count': 0,
+				'records': []
+			};
+			
+			for (var i = 0; i < node.LematizedNodes.length; ++i)
+			{
+				var lematizedNode = node.LematizedNodes[i];
+				var word = _getWordForNode(lematizedNode);
+				var record = {
+					'value': word,
+					'count': lematizedNode.TerminalLocations.length
+				};
+				lemmaGroup.records.push(record);
+				lemmaGroup.count += record.count
+			}
+			lemmaGroups.push(lemmaGroup);
+		}
+		
+		for (var key in node)
+		{
+			if (key.length != 1) continue;
+			_appendLemmaRec(node[key], lemmaGroups);
+		}
+	};
+
+	
+	this.enumerateLemmaGroups = function(){
+		var lemmaGroups = [];
+		_appendLemmaRec(_root, lemmaGroups);
+		return lemmaGroups;
+	};
 	
 	this.enumerateWordPositions = function(word){
 		if (!word || word.length == 0)
@@ -124,5 +171,5 @@ var PrefixTree = function(){
 		
 		
 		return copy;
-	}
+	};
 };

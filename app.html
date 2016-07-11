@@ -109,7 +109,12 @@
 				t.push('koko', 'koko', 3, 3);
 				t.push('kabanow', 'kaban', 4, 4);
 				t.push('kabane', 'kaban', 5, 5);
-				console.log(t.getRoot());
+				t.push('kabanow', 'kaban', 6, 6);
+				// console.log(t.getRoot());
+				// console.log(t.enumerateWords());
+				console.log(t.enumerateLemmaGroups());
+				
+				
 			
  				$('#srtFile').change(function(evt){
 					var files = evt.target.files;
