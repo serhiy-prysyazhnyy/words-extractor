@@ -12,7 +12,9 @@
 			var match = re.exec(paragraphText);
 			while (match)
 			{
-				_currentBookTree.push(match[0], paragraphIndex, match.index);
+				var word = match[0];
+				var lemma = word;
+				_currentBookTree.push(word, lemma, paragraphIndex, match.index);
 				match = re.exec(paragraphText);
 			}
 		}
@@ -26,45 +28,6 @@
 			return 0;
 		});
 	};
-	
-	var _parseSrt = function (data) {
-		function __strip(s) {
-			return s.replace(/^\s+|\s+$/g,"");
-		}
-		srt = data.replace(/\r\n|\r|\n/g, '\n');
-
-		srt = __strip(srt);
-
-		var srt_ = srt.split('\n\n');
-
-		var index = 0;
-		var subtitles = [];
-
-		for(s in srt_) {
-			st = srt_[s].split('\n');
-
-			if(st.length >= 2) {
-				var number = st[0];
-
-				var start = __strip(st[1].split(' --> ')[0]);
-				var end = __strip(st[1].split(' --> ')[1]);
-				var text = st[2];
-
-				if(st.length > 2) {
-					for(j=3; j<st.length;j++)
-					  text += '\n' + st[j];
-				}
-
-				subtitles[index] = {};
-				subtitles[index].number = number;
-				subtitles[index].start = start;
-				subtitles[index].end = end;
-				subtitles[index].text = text;
-			}
-			index++;
-		}
-		return subtitles;
-	}
 	
 	var _getOccurenceSnippet = function(wordValue, paragraphIndex, paragraphOffset){
 		//'(' + paragraphOffset + ') ' + 

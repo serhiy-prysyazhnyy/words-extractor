@@ -1,4 +1,7 @@
 var Node = function(){
+	this.Key = '';
+	this.Parent = null;
+	this.LematizedNodes = [];
 	this.TerminalLocations = [];
 };
 
@@ -6,16 +9,13 @@ var Node = function(){
 var PrefixTree = function(){
 	var _root = new Node();
 	
-	this.clear = function(){
-		_root = new Node();
-	};
+	this.getRoot = function(){ return _root; }
 	
-	this.push = function(word, paragraphIndex, paragraphOffset){
+	var _getNodeForWord = function(word)
+	{
 		if (!word || word.length == 0)
-			return;
-		
-		word = word.toLowerCase();
-			
+			return null;
+					
 		var curr = _root;
 		for (var i = 0; i < word.length; ++i)
 		{
@@ -23,16 +23,50 @@ var PrefixTree = function(){
 			var next = curr[c];
 			if (!next){ 
 				next = new Node();
+				next.Key = c;
+				next.Parent = curr;
 				curr[c] = next;
 			}
 			curr = next;
 		}
 		
-		curr.TerminalLocations.push({
+		return curr;
+	}
+	
+	this.clear = function(){
+		_root = new Node();
+	};
+	
+	this.push = function(word, lemma, paragraphIndex, paragraphOffset){
+		if (!word || word.length == 0)
+			return;
+
+		if (!lemma || lemma.length == 0)
+			return;
+		
+		word = word.toLowerCase();
+		lemma = lemma.toLowerCase();
+		var wordNode = _getNodeForWord(word);
+		
+		var terminalLocation = {
 			'paragraphIndex': paragraphIndex,
 			'paragraphOffset': paragraphOffset
-		});
+		};
 		
+		wordNode.TerminalLocations.push(terminalLocation);
+		
+		if (word != lemma)
+		{
+			var lemmaNode = _getNodeForWord(lemma);
+			if (!lemmaNode.LematizedNodes.includes(wordNode))
+			{
+				lemmaNode.LematizedNodes.push(wordNode);
+			}
+			else
+			{
+				console.log('found');
+			}
+		}
 		//console.log(_root);
 	};
 	

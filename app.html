@@ -102,6 +102,15 @@
 		</footer>
 		<script type='text/javascript'>
 			$(function(){
+			
+				var t = new PrefixTree();
+				t.push('kaban', 'kaban', 1, 1);
+				t.push('owl', 'owl', 2, 2);
+				t.push('koko', 'koko', 3, 3);
+				t.push('kabanow', 'kaban', 4, 4);
+				t.push('kabane', 'kaban', 5, 5);
+				console.log(t.getRoot());
+			
  				$('#srtFile').change(function(evt){
 					var files = evt.target.files;
 					if (evt.target.files && evt.target.files.length > 0)
