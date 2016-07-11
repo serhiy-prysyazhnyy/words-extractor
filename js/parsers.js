@@ -1,32 +1,57 @@
 ;var Parsers = 
 (function(){
+
+	var _normalize = function(s){
+		return s.replace(/\r\n|\r|\n/g, '\n');
+	};
+	
+	var _trim = function (s) {
+		return s.replace(/^\s+|\s+$/g, '');
+	};
+	
+	var _removeEmptyLines = function(s){
+		return s.replace(/(\n+)/g, '\n');
+	};
+	
+	var TxtParser = function(){
+
+		var _processedText = '';
+		
+		this.parse = function(fileContent){
+			var processed = _normalize(fileContent);
+			var trimmed = _trim(processed);
+			_processedText = _removeEmptyLines(trimmed);
+		};
+		
+		this.getParagraphs = function(){
+			var strParagraphs = _processedText.split('\n');
+			return strParagraphs;
+		};
+	};
+
 	
 	var SrtParser = function(){
 
 		var _subtitles = [];
 		
-		var _strip = function (s) {
-			return s.replace(/^\s+|\s+$/g,"");
-		}
-		
 		this.parse = function(fileContent){
-			srt = fileContent.replace(/\r\n|\r|\n/g, '\n');
 
-			srt = _strip(srt);
-
-			var srt_ = srt.split('\n\n');
+			var processed = _normalize(fileContent);
+			var trimmed = _trim(processed);
+			
+			var perts = trimmed.split('\n\n');
 
 			var index = 0;
 			_subtitles = [];
 
-			for(s in srt_) {
-				st = srt_[s].split('\n');
+			for(s in perts) {
+				st = perts[s].split('\n');
 
 				if(st.length >= 2) {
 					var number = st[0];
 
-					var start = _strip(st[1].split(' --> ')[0]);
-					var end = _strip(st[1].split(' --> ')[1]);
+					var start = _trim(st[1].split(' --> ')[0]);
+					var end = _trim(st[1].split(' --> ')[1]);
 					var text = st[2];
 
 					if(st.length > 2) {
@@ -54,7 +79,7 @@
 			return strParagraphs;
 		};
 	};
-	
+		
 	// var xmlParser = new DOMParser();
 	// xmlDoc = xmlParser.parseFromString(fileContent, "text/xml");
 	
@@ -79,7 +104,7 @@
 	var getParser = function(parserType){
 		switch(parserType.toUpperCase())
 		{
-			case 'TXT': return null;
+			case 'TXT': return new TxtParser();
 			case 'SRT': return new SrtParser();
 			case 'FB2': return null;
 			default: return null;
