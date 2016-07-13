@@ -1,8 +1,9 @@
 ;var Application = 
-(function(PrefixTree, parsers, $, stopwords){
+(function(PrefixTree, parsers, $, stopwords, lemmatizer){
 	var _currentBookParagraphs = [];
 	var _currentBookTree = new PrefixTree();
 	var _currentBookWordList = [];
+    var _currentBookLemmaGroups = [];
 	
 	var _buildTreeForBook = function(){
 		_currentBookTree.clear();
@@ -13,7 +14,7 @@
 			while (match)
 			{
 				var word = match[0];
-				var lemma = word;
+				var lemma = lemmatizer.getLemma(word);
 				
 				if (stopwords[lemma.toLowerCase()]){
 					match = re.exec(paragraphText);
@@ -24,6 +25,7 @@
 				match = re.exec(paragraphText);
 			}
 		}
+
 		_currentBookWordList = _currentBookTree.enumerateWords();
 
 		_currentBookWordList.sort(function(a,b){
@@ -33,6 +35,17 @@
 			if (a.value > b.value) return 1;
 			return 0;
 		});
+
+		_currentBookLemmaGroups = _currentBookTree.enumerateLemmaGroups();
+
+		_currentBookLemmaGroups.sort(function (a, b) {
+		    var primVal = b.count - a.count;
+		    if (primVal != 0) return primVal;
+		    if (a.value < b.value) return -1;
+		    if (a.value > b.value) return 1;
+		    return 0;
+		});
+
 	};
 	
 	var _getOccurenceSnippet = function(wordValue, paragraphIndex, paragraphOffset){
@@ -76,31 +89,83 @@
 			}
 			$('#distinctWordsCnt').text(_currentBookWordList.length);
 		},
-		showHideOccurencesList: function($elem){
-			var nextNode = $elem.next();
-			if (!nextNode || !nextNode.attr('data-occs'))
-			{
-				var nextNodeHtml = '<li class="list-group-item" style="display: none;" data-occs="filled">';
-				nextNodeHtml += '<table class="table table-striped table-bordered table-hover"><tbody>';
+		showHideOccurencesList_forWords: function ($elem) {
+		    var nextNode = $elem.next();
+		    if (!nextNode || !nextNode.attr('data-occs')) {
+		        var nextNodeHtml = '<li class="list-group-item" style="display: none;" data-occs="filled">';
+		        nextNodeHtml += '<table class="table table-striped table-bordered table-hover"><tbody>';
 
-				var wordValue = $elem.attr('data-word-val');
+		        var wordValue = $elem.attr('data-word-val');
+
+		        var positions = _currentBookTree.enumerateWordPositions(wordValue);
+
+		        for (var i in positions) {
+		            if (i > 41) break;
+		            var position = positions[i];
+		            nextNodeHtml += '<tr><td>' + _getOccurenceSnippet(wordValue, position.paragraphIndex, position.paragraphOffset) + '</td></tr>';
+		        }
+
+		        nextNodeHtml += '</tbody></table></li>';
+
+		        nextNode = $(nextNodeHtml);
+		        nextNode.insertAfter($elem);
+		    }
+		    nextNode.slideToggle();
+		},
+
+	    showLemmaGroupsList: function() {
+	        var wordListBody = $('#wordList');
+	        wordListBody.empty();
+	        for (var i in _currentBookLemmaGroups) {
+	            var lemmaGroup = _currentBookLemmaGroups[i];
+	            var variants = [];
+
+	            for (var j in lemmaGroup.records) {
+	                var record = lemmaGroup.records[j];
+	                variants.push(record.value + ' (' + record.count + ')');
+	            }
+
+	            var wordEntryRow =
+	                $('<li class="list-group-item" data-lemma-val="' +
+	                lemmaGroup.value +
+	                '"><span class="badge">' +
+	                lemmaGroup.count +
+	                '</span><b>' +
+	                lemmaGroup.value +
+	                '</b><a href="http://www.merriam-webster.com/dictionary/' +
+	                lemmaGroup.value +
+	                '" target="_blank" style="margin-left: 41px;">translate</a><br/>' +
+                    variants.join(', ') +
+                    '</li>');
+	            wordListBody.append(wordEntryRow);
+	        }
+	        $('#distinctWordsCnt').text(_currentBookWordList.length);
+	    },
+		showHideOccurencesList: function($elem){
+	        var nextNode = $elem.next();
+	        if (!nextNode || !nextNode.attr('data-occs'))
+	        {
+	            var nextNodeHtml = '<li class="list-group-item" style="display: none;" data-occs="filled">';
+	            nextNodeHtml += '<table class="table table-striped table-bordered table-hover"><tbody>';
+
+	            var lemmaValue = $elem.attr('data-lemma-val');
 				
-				var positions = _currentBookTree.enumerateWordPositions(wordValue);
+	            var positions = _currentBookTree.enumerateWordPositionsByLemma(lemmaValue);
 				
-				for (var i in positions){
-					if (i > 41) break;
-					var position = positions[i];
-					nextNodeHtml += '<tr><td>' + _getOccurenceSnippet(wordValue, position.paragraphIndex, position.paragraphOffset) + '</td></tr>';
-				}
+	            for (var i in positions){
+	                if (i > 41) break;
+	                var position = positions[i];
+	                nextNodeHtml += '<tr><td>' + _getOccurenceSnippet(lemmaValue, position.paragraphIndex, position.paragraphOffset) + '</td></tr>';
+	            }
 				
-				nextNodeHtml += '</tbody></table></li>';
+	            nextNodeHtml += '</tbody></table></li>';
 				
-				nextNode = $(nextNodeHtml);
-				nextNode.insertAfter($elem);
-			}
-			nextNode.slideToggle();
-		}
-	};
+	            nextNode = $(nextNodeHtml);
+	            nextNode.insertAfter($elem);
+	        }
+	        nextNode.slideToggle();
+	    }
+    };
 })(PrefixTree, Parsers, jQuery, {a:1,
 about:1,
 above:1,
@@ -426,4 +491,16 @@ you:1,
 your:1,
 yours:1,
 yourself:1,
-yourselves:1});
+yourselves:1},
+{
+    getLemma: function (word) {
+
+        word = word.toLowerCase();
+        var lemma = EnglishLemmas[word];
+        if (lemma) {
+            return lemma;
+        } else {
+            return word;
+        }
+    }
+});

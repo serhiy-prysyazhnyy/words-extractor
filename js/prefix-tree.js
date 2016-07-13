@@ -67,15 +67,11 @@ var PrefixTree = function(){
 		
 		wordNode.TerminalLocations.push(terminalLocation);
 		
-		//if (word != lemma)
-		//{
-			var lemmaNode = _getNodeForWord(lemma);
-			if (!lemmaNode.LematizedNodes.includes(wordNode))
-			{
-				lemmaNode.LematizedNodes.push(wordNode);
-			}
-		//}
-		//console.log(_root);
+	    var lemmaNode = _getNodeForWord(lemma);
+		if (!lemmaNode.LematizedNodes.includes(wordNode))
+		{
+			lemmaNode.LematizedNodes.push(wordNode);
+		}
 	};
 	
 	var _appendWordRec = function(currentStr, node, words)
@@ -121,15 +117,15 @@ var PrefixTree = function(){
 					'count': lematizedNode.TerminalLocations.length
 				};
 				lemmaGroup.records.push(record);
-				lemmaGroup.count += record.count
+			    lemmaGroup.count += record.count;
 			}
 			lemmaGroups.push(lemmaGroup);
 		}
 		
-		for (var key in node)
-		{
-			if (key.length != 1) continue;
-			_appendLemmaRec(node[key], lemmaGroups);
+		for (var key in node) {
+	        if (!node.hasOwnProperty(key)) continue;
+		    if (key.length != 1) continue;
+		    _appendLemmaRec(node[key], lemmaGroups);
 		}
 	};
 
@@ -171,4 +167,8 @@ var PrefixTree = function(){
 				
 		return copy;
 	};
+
+    this.enumerateWordPositionsByLemma = function(lemma) {
+        return this.enumerateWordPositions(lemma);
+    };
 };

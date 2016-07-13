@@ -1,4 +1,10 @@
-#wordList li.list-group-item[data-word-val] { cursor: pointer;}
+#wordList li.list-group-item[data-word-val] {
+    cursor: pointer;
+}
+
+#wordList li.list-group-item[data-lemma-val] {
+    cursor: pointer;
+}
 
 .btn-file {
 	position: relative;
